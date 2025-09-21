@@ -6,6 +6,8 @@
 
 import numpy as np
 import random
+import json
+import os
 from typing import Dict, List, Tuple
 from config import DATA_CONFIG, RANDOM_SEED
 
@@ -25,6 +27,43 @@ class UserGenerator:
         
         # 存储生成的用户偏好
         self.user_preferences = {}
+        
+        # 加载分类受欢迎程度配置
+        self.category_popularity = self._load_category_popularity()
+
+    #region 加载分类受欢迎程度配置
+    def _load_category_popularity(self) -> Dict[str, float]:
+        """
+        从外部文件加载分类受欢迎程度配置
+        
+        Returns:
+            分类受欢迎程度字典
+            
+        Raises:
+            FileNotFoundError: 配置文件不存在
+            ValueError: 配置文件格式错误或缺少必要数据
+            Exception: 其他加载错误
+        """
+        # 获取配置文件路径
+        config_file = self.category_interest_config.get('category_popularity_file', 'category_popularity.json')
+        
+        # 检查文件是否存在
+        if not os.path.exists(config_file):
+            raise FileNotFoundError(f"分类受欢迎程度配置文件 {config_file} 不存在")
+        
+        # 加载配置文件
+        with open(config_file, 'r', encoding='utf-8') as f:
+            config_data = json.load(f)
+        
+        # 提取分类受欢迎程度数据
+        category_popularity = config_data.get('category_popularity', {})
+        
+        if not category_popularity:
+            raise ValueError(f"配置文件 {config_file} 中没有找到 category_popularity 数据")
+        
+        print(f"成功加载分类受欢迎程度配置: {len(category_popularity)} 个分类")
+        return category_popularity
+    #endregion
 
     #region 为指定用户分配偏好类型
     def generate_user_preference_type(self, user_id: str) -> str:
@@ -118,7 +157,7 @@ class UserGenerator:
             分类兴趣字典 {category: interest_strength}
         """
         interests = {}
-        category_popularity = self.category_interest_config['category_popularity']
+        category_popularity = self.category_popularity
         strength_dist = self.user_preference_config['interest_strength_distribution']
         
         if preference_type == 'single_category':

@@ -21,10 +21,12 @@ Thumbs.db
 
 # Data
 *.csv
-*.json
 *.pkl
 *.npy
 *.npz
+
+# folder
+project/data/
 
 # Logs
 *.log

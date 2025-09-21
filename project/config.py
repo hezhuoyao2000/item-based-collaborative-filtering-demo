@@ -84,20 +84,11 @@ DATA_CONFIG = {
     
     # region 分类兴趣配置 / region Category Interest Configuration
     'category_interest': {
-        'category_popularity': {
-            'Baby & Toddler Food': 0.15,
-            'Fresh Foods & Bakery': 0.12,
-            'Health & Body': 0.10,
-            'Pantry': 0.08,
-            'Household & Cleaning': 0.08,
-            'Hot & Cold Drinks': 0.07,
-            'Beer & Wine': 0.06,
-            'others': 0.34
-        },
+        'category_popularity_file': 'category_popularity.json',  # 分类受欢迎程度配置文件
         'interest_based_probability': {
-            'high_interest': 0.8,        # 高兴趣分类的交互概率
-            'medium_interest': 0.4,      # 中等兴趣分类的交互概率
-            'low_interest': 0.1          # 低兴趣分类的交互概率
+            'high': 0.8,        # 高兴趣分类的交互概率
+            'medium': 0.4,      # 中等兴趣分类的交互概率
+            'low': 0.1          # 低兴趣分类的交互概率
         }
     },
     #endregion
