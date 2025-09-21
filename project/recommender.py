@@ -64,8 +64,8 @@ class Recommender:
                 self.data_processor = EnhancedDataProcessor()
                 # 尝试加载保存的数据
                 data_files = [
-                    os.path.join(self.file_config['data_dir'], 'enhanced_interactions.csv'),
-                    os.path.join(self.file_config['data_dir'], 'enhanced_items.csv')
+                    os.path.join(self.file_config['data_dir'], 'interactions.csv'),
+                    os.path.join(self.file_config['data_dir'], 'items.csv')
                 ]
                 
                 if all(os.path.exists(f) for f in data_files):
@@ -457,8 +457,8 @@ class Recommender:
                 self.data_processor = EnhancedDataProcessor()
                 # 尝试加载保存的数据
                 data_files = [
-                    os.path.join(self.file_config['data_dir'], 'enhanced_interactions.csv'),
-                    os.path.join(self.file_config['data_dir'], 'enhanced_items.csv')
+                    os.path.join(self.file_config['data_dir'], 'interactions.csv'),
+                    os.path.join(self.file_config['data_dir'], 'items.csv')
                 ]
                 
                 if all(os.path.exists(f) for f in data_files):
@@ -515,8 +515,8 @@ class Recommender:
                 self.data_processor = EnhancedDataProcessor()
                 # 尝试加载保存的数据
                 data_files = [
-                    os.path.join(self.file_config['data_dir'], 'enhanced_interactions.csv'),
-                    os.path.join(self.file_config['data_dir'], 'enhanced_items.csv')
+                    os.path.join(self.file_config['data_dir'], 'interactions.csv'),
+                    os.path.join(self.file_config['data_dir'], 'items.csv')
                 ]
                 
                 if all(os.path.exists(f) for f in data_files):
@@ -767,8 +767,8 @@ class Recommender:
                 self.data_processor = EnhancedDataProcessor()
                 # 尝试加载保存的数据
                 data_files = [
-                    os.path.join(self.file_config['data_dir'], 'enhanced_interactions.csv'),
-                    os.path.join(self.file_config['data_dir'], 'enhanced_items.csv')
+                    os.path.join(self.file_config['data_dir'], 'interactions.csv'),
+                    os.path.join(self.file_config['data_dir'], 'items.csv')
                 ]
                 
                 if all(os.path.exists(f) for f in data_files):

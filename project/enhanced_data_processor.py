@@ -548,12 +548,12 @@ class EnhancedDataProcessor:
             os.makedirs(data_dir)
         
         # 保存交互数据
-        interactions_file = os.path.join(data_dir, 'enhanced_interactions.csv')
+        interactions_file = os.path.join(data_dir, 'interactions.csv')
         self.interactions_df.to_csv(interactions_file, index=False)
         print(f"交互数据已保存到: {interactions_file}")
         
         # 保存商品数据
-        items_file = os.path.join(data_dir, 'enhanced_items.csv')
+        items_file = os.path.join(data_dir, 'items.csv')
         self.items_df.to_csv(items_file, index=False)
         print(f"商品数据已保存到: {items_file}")
         
@@ -613,7 +613,7 @@ class EnhancedDataProcessor:
             self.items_df = self.generate_items_with_real_categories()
             # 保存生成的商品数据
             if items_file is None:
-                items_file = os.path.join(self.file_config['data_dir'], 'enhanced_items.csv')
+                items_file = os.path.join(self.file_config['data_dir'], 'items.csv')
             self.items_df.to_csv(items_file, index=False)
             print(f"商品数据已保存到: {items_file}")
         

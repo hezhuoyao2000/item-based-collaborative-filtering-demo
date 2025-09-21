@@ -209,8 +209,8 @@ def show_system_status():
     
     # 检查数据文件
     data_files = [
-        os.path.join(config.FILE_CONFIG['data_dir'], 'enhanced_interactions.csv'),
-        os.path.join(config.FILE_CONFIG['data_dir'], 'enhanced_items.csv'),
+        os.path.join(config.FILE_CONFIG['data_dir'], 'interactions.csv'),
+        os.path.join(config.FILE_CONFIG['data_dir'], 'items.csv'),
         os.path.join(config.FILE_CONFIG['data_dir'], 'train_interactions.csv'),
         os.path.join(config.FILE_CONFIG['data_dir'], 'test_interactions.csv')
     ]

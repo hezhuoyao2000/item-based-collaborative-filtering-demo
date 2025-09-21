@@ -69,8 +69,8 @@ DATA_CONFIG = {
     'user_preference': {
         'preference_types': {
             'single_category': 0.3,      # 30%用户只对单一分类感兴趣
-            'multi_category': 0.5,       # 50%用户对多个分类感兴趣
-            'explorer': 0.2              # 20%用户对所有分类都有兴趣
+            'multi_category': 0.65,       # 65%用户对多个分类感兴趣
+            'explorer': 0.05              # 5%用户对所有分类都有兴趣
         },
         'max_categories_per_user': 5,    # 每用户最多感兴趣的分类数
         'min_categories_per_user': 1,    # 每用户最少感兴趣的分类数

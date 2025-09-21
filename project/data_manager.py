@@ -48,8 +48,8 @@ class DataManager:
             
             # 检查是否有保存的数据文件
             data_files = [
-                os.path.join(config.FILE_CONFIG['data_dir'], 'enhanced_interactions.csv'),
-                os.path.join(config.FILE_CONFIG['data_dir'], 'enhanced_items.csv')
+                os.path.join(config.FILE_CONFIG['data_dir'], 'interactions.csv'),
+                os.path.join(config.FILE_CONFIG['data_dir'], 'items.csv')
             ]
             
             if all(os.path.exists(f) for f in data_files) and not force_regenerate:
@@ -141,8 +141,8 @@ class DataManager:
     def check_data_files_exist(self):
         """检查数据文件是否存在"""
         data_files = [
-            os.path.join(config.FILE_CONFIG['data_dir'], 'enhanced_interactions.csv'),
-            os.path.join(config.FILE_CONFIG['data_dir'], 'enhanced_items.csv')
+            os.path.join(config.FILE_CONFIG['data_dir'], 'interactions.csv'),
+            os.path.join(config.FILE_CONFIG['data_dir'], 'items.csv')
         ]
         return all(os.path.exists(f) for f in data_files)
     
