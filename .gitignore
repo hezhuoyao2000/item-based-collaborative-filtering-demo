@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python/
+env/
+venv/
+.venv/
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# IDEs
+.vscode/
+.idea/
+
+# Operating System
+.DS_Store
+Thumbs.db
+
+# Data
+*.csv
+*.json
+*.pkl
+*.npy
+*.npz
+
+# Logs
+*.log
+
+# Models
+models/
+start-claude.bat
+.env.xAI
+.env.kimi
+.env.chat
