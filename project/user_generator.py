@@ -25,7 +25,8 @@ class UserGenerator:
         
         # 存储生成的用户偏好
         self.user_preferences = {}
-        
+
+    #region 为指定用户分配偏好类型
     def generate_user_preference_type(self, user_id: str) -> str:
         """
         为指定用户分配偏好类型
@@ -45,7 +46,8 @@ class UserGenerator:
             return 'multi_category'
         else:
             return 'explorer'
-    
+    #endregion
+    #region 基于权重随机选择分类
     def weighted_random_choice(self, categories: List[str], weights: Dict[str, float]) -> str:
         """
         基于权重随机选择分类
@@ -71,7 +73,8 @@ class UserGenerator:
         
         # 基于权重随机选择
         return np.random.choice(categories, p=normalized_weights)
-    
+    #endregion
+    #region 基于权重随机采样多个分类
     def weighted_random_sample(self, categories: List[str], weights: Dict[str, float], 
                              num_samples: int) -> List[str]:
         """
@@ -99,7 +102,8 @@ class UserGenerator:
         
         # 基于权重随机采样（不重复）
         return np.random.choice(categories, size=num_samples, replace=False, p=normalized_weights)
-    
+    #endregion
+    #region 根据偏好类型为指定用户生成分类兴趣
     def generate_category_interests(self, user_id: str, preference_type: str, 
                                   categories: List[str]) -> Dict[str, str]:
         """
@@ -149,7 +153,8 @@ class UserGenerator:
                 interests[cat] = strength
         
         return interests
-    
+    #endregion
+    #region 为所有用户生成偏好数据
     def generate_all_user_preferences(self, categories: List[str]) -> Dict[str, Dict]:
         """
         为所有用户生成偏好数据
@@ -202,7 +207,8 @@ class UserGenerator:
             print(f"  {strength}: {count} 个兴趣 ({percentage:.1f}%)")
         
         return self.user_preferences
-    
+    #endregion
+    #region 获取用户对特定分类商品的交互概率
     def get_user_interaction_probability(self, user_id: str, item_category: str) -> float:
         """
         获取用户对特定分类商品的交互概率
@@ -223,7 +229,8 @@ class UserGenerator:
         # 基于兴趣强度返回交互概率
         interest_probs = self.category_interest_config['interest_based_probability']
         return interest_probs.get(interest_strength, 0.1)  # 默认概率为0.1
-    
+    #endregion
+    #region 获取用户偏好的分类列表
     def get_user_preferred_categories(self, user_id: str) -> List[str]:
         """
         获取用户偏好的分类列表
@@ -240,7 +247,8 @@ class UserGenerator:
         user_interests = self.user_preferences[user_id]['category_interests']
         # 返回所有有偏好的分类
         return list(user_interests.keys())
-    
+    #endregion
+    #region 获取用户高兴趣的分类列表
     def get_user_high_interest_categories(self, user_id: str) -> List[str]:
         """
         获取用户高兴趣的分类列表
@@ -258,4 +266,4 @@ class UserGenerator:
         high_interest_categories = [cat for cat, strength in user_interests.items() 
                                   if strength == 'high']
         return high_interest_categories
-
+    #endregion
