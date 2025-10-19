@@ -96,7 +96,7 @@ DATA_CONFIG = {
 
 # region 模型参数 / region Model Parameters
 MODEL_CONFIG = {
-    'similarity_metric': 'pearson',  # 相似度计算方法 / Similarity calculation method
+    'similarity_metric': 'adjusted_cosine',  # 相似度计算方法 / Similarity calculation method
     'min_similarity': 0.05,          # 最小相似度阈值 / Minimum similarity threshold
     'top_n': 10,                    # 推荐商品数量 / Number of recommended items
     # 可选的相似度方法: 'cosine', 'pearson', 'adjusted_cosine'

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Recommendation System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+    <div class="main-container">
+        <!-- Title -->
+        <div class="text-center mb-4">
+            <h1 class="mb-2">🛒 Product Recommendation System</h1>
+            <p class="text-white-50">Personalized Recommendations Based on Collaborative Filtering</p>
+        </div>
+
+        <!-- System Status -->
+        <div id="systemStatus" class="alert alert-info" role="alert" style="display:none;"></div>
+
+        <!-- Action Button -->
+        <div class="text-center mb-4">
+            <button id="btnSimulate" class="btn btn-primary btn-simulate btn-lg" onclick="simulateUser()">
+                🎲 Simulate User Behavior and generate recommendations
+            </button>
+        </div>
+
+        <!-- User Interaction History -->
+        <div id="userHistory" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">👤 User Interaction History</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="stat-box">
+                                <strong>User ID:</strong> <span id="userId"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-box">
+                                <strong>Total Interactions:</strong> <span id="totalInteractions"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-box">
+                                <strong>Interaction Types:</strong> <span id="interactionTypes"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <h5 class="mb-3">Recent Interactions:</h5>
+                    <div id="interactionList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div id="recommendations" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">📊 Recommended Products</h4>
+                </div>
+                <div class="card-body">
+                    <div id="recList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="loading" style="display:none;">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Generating recommendations...</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        let currentUserId = null;
+
+        // Check system status on page load
+        window.onload = async function() {
+            await checkSystemStatus();
+        };
+
+        // Check system status
+        async function checkSystemStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/status`);
+                const data = await response.json();
+                
+                if (!data.ready) {
+                    const statusDiv = document.getElementById('systemStatus');
+                    statusDiv.innerHTML = `
+                        <strong>⚠️ System Not Ready:</strong> ${data.message}
+                    `;
+                    statusDiv.style.display = 'block';
+                    document.getElementById('btnSimulate').disabled = true;
+                }
+            } catch (error) {
+                console.error('Cannot connect to backend service:', error);
+                alert('Cannot connect to backend service, please ensure web_api.py is running');
+            }
+        }
+
+        // Simulate user
+        async function simulateUser() {
+            // Hide previous results
+            document.getElementById('userHistory').style.display = 'none';
+            document.getElementById('recommendations').style.display = 'none';
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('btnSimulate').disabled = true;
+
+            try {
+                // 1. Simulate user interactions
+                const userResponse = await fetch(`${API_BASE}/simulate_user`, {
+                    method: 'POST'
+                });
+                const userData = await userResponse.json();
+
+                if (!userData.success) {
+                    throw new Error(userData.error);
+                }
+
+                currentUserId = userData.user_id;
+                displayUserHistory(userData);
+
+                // 2. Get recommendations
+                const recResponse = await fetch(`${API_BASE}/recommend?user_id=${currentUserId}`);
+                const recData = await recResponse.json();
+
+                if (!recData.success) {
+                    throw new Error(recData.error);
+                }
+
+                displayRecommendations(recData.recommendations);
+
+            } catch (error) {
+                alert('Error occurred: ' + error.message);
+                console.error(error);
+            } finally {
+                // Hide loading
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('btnSimulate').disabled = false;
+            }
+        }
+
+        // Display user interaction history
+        function displayUserHistory(userData) {
+            document.getElementById('userId').textContent = userData.user_id;
+            document.getElementById('totalInteractions').textContent = userData.total_interactions;
+            
+            // Display interaction type statistics
+            const types = userData.interaction_types;
+            const typesText = Object.entries(types)
+                .map(([type, count]) => `${type}: ${count}`)
+                .join(', ');
+            document.getElementById('interactionTypes').textContent = typesText;
+
+            // Display interaction list
+            const interactionList = document.getElementById('interactionList');
+            interactionList.innerHTML = userData.interactions.map(item => {
+                const badgeClass = item.interaction_type === 'click' ? 'badge-click' : 
+                                  item.interaction_type === 'cart' ? 'badge-cart' : 'badge-favorite';
+                const icon = item.interaction_type === 'click' ? '👁️' : 
+                            item.interaction_type === 'cart' ? '🛒' : '❤️';
+                
+                return `
+                    <div class="interaction-badge ${badgeClass}">
+                        ${icon} ${item.interaction_type} <strong>${item.item_id}</strong> (${item.category})
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('userHistory').style.display = 'block';
+        }
+
+        // Display recommendations
+        function displayRecommendations(recommendations) {
+            const recList = document.getElementById('recList');
+            
+            recList.innerHTML = recommendations.map((rec, index) => {
+                const rankEmoji = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
+                
+                // Format similar items
+                let similarItemsHtml = '';
+                if (rec.similar_items && rec.similar_items.length > 0) {
+                    similarItemsHtml = rec.similar_items.map(item => 
+                        `<div class="similar-item">↳ Similar to <strong>${item.item_id}</strong> (${item.category}, similarity: ${item.similarity.toFixed(3)})</div>`
+                    ).join('');
+                }
+
+                return `
+                    <div class="rec-item">
+                        <div class="d-flex align-items-start">
+                            <div class="rec-rank">${rankEmoji}</div>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-2">${rec.item_id}</h5>
+                                <div class="mb-2">
+                                    <span class="badge bg-primary">category: ${rec.category}</span>
+                                    <span class="badge bg-success">score: ${rec.score}</span>
+                                </div>
+                                ${similarItemsHtml}
+                                <div class="explanation">
+                                    💡 <strong>Reason:</strong> ${rec.explanation}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('recommendations').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+

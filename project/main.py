@@ -157,48 +157,60 @@ def recommend_for_user(user_id, top_n=10):
             print(f"错误: 用户 {user_id} 不存在 / Error: User {user_id} does not exist")
             return None
         
-        print(f"为用户 {user_id} 生成推荐... / Generating recommendations for user {user_id}...")
+        print(f"Generating recommendations for user {user_id}...")
         
-        # 获取用户画像 / Get user profile
+        # Get user profile
         profile = recommender.get_user_profile(user_id, processor)
-        print(f"\n用户画像: / User Profile:")
-        print(f"  用户ID: {profile['user_id']} /   User ID: {profile['user_id']}")
-        print(f"  交互次数: {profile['interaction_count']} /   Interaction Count: {profile['interaction_count']}")
-        print(f"  偏好类别: {profile['favorite_categories']} /   Favorite Categories: {profile['favorite_categories']}")
-        print(f"  交互类型分布: {profile['interaction_types']} /   Interaction Type Distribution: {profile['interaction_types']}")
+        print(f"\n=== User Profile ===")
+        print(f"  User ID: {profile['user_id']}")
+        print(f"  Total Interactions: {profile['interaction_count']}")
+        print(f"  Favorite Categories: {', '.join(profile['favorite_categories'][:5])}")
+        print(f"  Interaction Types: {profile['interaction_types']}")
         
-        # 生成推荐 / Generate recommendations
+        # Generate recommendations
         recommendations = recommender.get_recommendations(user_id, top_n, processor)
         
         if recommendations:
-            print(f"\n推荐结果 (Top-{top_n}): / Recommendations (Top-{top_n}):")
-            for i, (item_id, score) in enumerate(recommendations, 1):
-                print(f"  {i}. {item_id} (评分: {score:.4f}) /   {i}. {item_id} (Score: {score:.4f})")
+            print(f"\n=== Recommendation Results (Top-{top_n}) ===")
             
-            # 获取推荐解释 / Get recommendation explanations
-            explanations = recommender.get_recommendation_explanations(user_id, recommendations, processor)
-            print(f"\n推荐解释: / Recommendation Explanations:")
-            for i, explanation in enumerate(explanations[:3], 1):
-                print(f"  {i}. {explanation['explanation']} /   {i}. {explanation['explanation']}")
+            # Get recommendation explanations with detailed info
+            explanations = recommender.get_recommendation_explanations(user_id, recommendations, processor, top_similar_items=3)
             
-            # 显示推荐统计 / Display recommendation statistics
+            for i, explanation in enumerate(explanations, 1):
+                item_id = explanation['recommended_item']
+                score = explanation['score']
+                item_info = explanation['item_info']
+                similar_items = explanation['similar_items']
+                
+                print(f"\n[{i}] Item: {item_id} (Score: {score:.4f})")
+                print(f"    Category: {item_info.get('category', 'Unknown')}")
+                
+                if similar_items:
+                    print(f"    Similar Items from Your History:")
+                    for j, sim_item in enumerate(similar_items[:3], 1):
+                        print(f"      {j}. {sim_item['item_id']} (Similarity: {sim_item['similarity']:.3f}, Category: {sim_item['category']})")
+                
+                print(f"    Reason: {explanation['explanation']}")
+            
+            # Display recommendation statistics
             stats = recommender.get_recommendation_stats(recommendations)
-            print(f"\n推荐统计: / Recommendation Statistics:")
-            print(f"  平均评分: {stats['avg_score']:.4f} /   Average Score: {stats['avg_score']:.4f}")
-            print(f"  最高评分: {stats['max_score']:.4f} /   Maximum Score: {stats['max_score']:.4f}")
-            print(f"  最低评分: {stats['min_score']:.4f} /   Minimum Score: {stats['min_score']:.4f}")
+            print(f"\n=== Recommendation Statistics ===")
+            print(f"  Average Score: {stats['avg_score']:.4f}")
+            print(f"  Highest Score: {stats['max_score']:.4f}")
+            print(f"  Lowest Score: {stats['min_score']:.4f}")
+            print(f"  Score Std Dev: {stats['score_std']:.4f}")
             
         else:
-            print(f"无法为用户 {user_id} 生成推荐 / Unable to generate recommendations for user {user_id}")
-            print("可能原因: / Possible reasons:")
-            print("  1. 用户ID不存在 /   1. User ID does not exist")
-            print("  2. 用户没有历史交互记录 /   2. User has no historical interaction records")
-            print("  3. 用户交互的商品数量过少 /   3. User has too few interacted items")
+            print(f"Unable to generate recommendations for user {user_id}")
+            print("Possible reasons:")
+            print("  1. User ID does not exist")
+            print("  2. User has no historical interaction records")
+            print("  3. User has too few interacted items")
         
         return recommendations
         
     except Exception as e:
-        print(f"推荐生成失败: {e} / Recommendation generation failed: {e}")
+        print(f"Recommendation generation failed: {e}")
         return None
 #endregion
 

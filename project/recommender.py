@@ -463,15 +463,13 @@ class Recommender:
     #endregion
     #endregion
     #region 推荐解释 / Recommendation Explanation
-    def get_recommendation_explanations(self, user_id, recommendations, data_processor=None):
+    def get_recommendation_explanations(self, user_id, recommendations, data_processor=None, top_similar_items=3):
         """
-        为推荐结果提供解释
-        Provide explanations for recommendation results
+        Provide detailed explanations for recommendation results
         """
         if data_processor is None:
             if self.data_processor is None:
                 self.data_processor = EnhancedDataProcessor()
-                # 尝试加载保存的数据 / Attempt to load saved data
                 data_files = [
                     os.path.join(self.file_config['data_dir'], 'interactions.csv'),
                     os.path.join(self.file_config['data_dir'], 'items.csv')
@@ -489,36 +487,107 @@ class Recommender:
                 self.data_processor.split_train_test()
             data_processor = self.data_processor
         
-        # 获取用户历史 / Get user history
+        # Get user history
         user_history = self.get_user_history(user_id, data_processor)
         interacted_items = set(user_history['item_id'].unique())
         
         explanations = []
         
         for item_id, score in recommendations:
-            # 找到最相似的交互物品 / Find the most similar interacted item
-            item_idx = self.item_index[item_id]
-            max_similarity = 0
-            most_similar_item = None
+            # Get item details
+            item_info = self._get_item_info(item_id, data_processor)
             
-            for interacted_item in interacted_items:
-                if interacted_item in self.item_index:
-                    interacted_idx = self.item_index[interacted_item]
-                    similarity = self.similarity_matrix[item_idx, interacted_idx]
-                    if similarity > max_similarity:
-                        max_similarity = similarity
-                        most_similar_item = interacted_item
+            # Find top similar items from user's history
+            similar_items = self._get_top_similar_interacted_items(
+                item_id, interacted_items, top_n=top_similar_items, data_processor=data_processor
+            )
+            
+            # Get category information
+            category_info = item_info.get('category', 'Unknown')
+            parent_category = item_info.get('parent_category', 'Unknown')
+            
+            # Build explanation text
+            explanation_parts = []
+            
+            if similar_items:
+                most_similar = similar_items[0]
+                explanation_parts.append(
+                    f"This item is recommended because you previously interacted with similar item '{most_similar['item_id']}' "
+                    f"(similarity: {most_similar['similarity']:.3f}, category: {most_similar['category']})"
+                )
+                
+                if len(similar_items) > 1:
+                    other_similar = ", ".join([f"{item['item_id']} ({item['similarity']:.3f})" 
+                                               for item in similar_items[1:]])
+                    explanation_parts.append(f"Also similar to: {other_similar}")
+            
+            explanation_parts.append(f"Category: {category_info} | Parent: {parent_category}")
             
             explanation = {
                 'recommended_item': item_id,
                 'score': score,
-                'most_similar_item': most_similar_item,
-                'similarity': max_similarity,
-                'explanation': f"推荐此商品是因为您之前对商品 {most_similar_item} 感兴趣，相似度为 {max_similarity:.3f} / This item is recommended because you were previously interested in item {most_similar_item}, with a similarity of {max_similarity:.3f}"
+                'item_info': item_info,
+                'similar_items': similar_items,
+                'category': category_info,
+                'parent_category': parent_category,
+                'explanation': ". ".join(explanation_parts)
             }
             explanations.append(explanation)
         
         return explanations
+    
+    def _get_item_info(self, item_id, data_processor):
+        """
+        Get detailed information about an item
+        """
+        if not hasattr(data_processor, 'items_df') or data_processor.items_df is None:
+            return {}
+        
+        item_row = data_processor.items_df[data_processor.items_df['item_id'] == item_id]
+        
+        if len(item_row) == 0:
+            return {}
+        
+        item_data = item_row.iloc[0]
+        return {
+            'item_id': item_id,
+            'category': item_data.get('category', 'Unknown'),
+            'parent_category': item_data.get('parent_category', 'Unknown'),
+            'price': item_data.get('price', 0.0),
+            'popularity_score': item_data.get('popularity_score', 0.0)
+        }
+    
+    def _get_top_similar_interacted_items(self, item_id, interacted_items, top_n=3, data_processor=None):
+        """
+        Get top N similar items from user's interaction history
+        """
+        if item_id not in self.item_index:
+            return []
+        
+        if data_processor is None:
+            data_processor = self.data_processor
+        
+        item_idx = self.item_index[item_id]
+        similar_items = []
+        
+        for interacted_item in interacted_items:
+            if interacted_item in self.item_index:
+                interacted_idx = self.item_index[interacted_item]
+                similarity = self.similarity_matrix[item_idx, interacted_idx]
+                
+                if similarity > 0:
+                    # Get category info for the similar item
+                    item_info = self._get_item_info(interacted_item, data_processor)
+                    
+                    similar_items.append({
+                        'item_id': interacted_item,
+                        'similarity': similarity,
+                        'category': item_info.get('category', 'Unknown')
+                    })
+        
+        # Sort by similarity and return top N
+        similar_items.sort(key=lambda x: x['similarity'], reverse=True)
+        return similar_items[:top_n]
     #endregion
     #endregion
     #region 用户画像 / User Profile
