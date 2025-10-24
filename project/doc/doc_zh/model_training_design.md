@@ -241,46 +241,130 @@ def load_model(self):
 
 ## 使用示例
 
-### 基本训练
+### 基本使用示例
+
 ```python
-# 创建训练器实例
-trainer = ModelTrainer()
+from model_trainer import ModelTrainer
 
-# 加载训练数据
-trainer.load_training_data(user_item_matrix, item_index)
+# 初始化模型训练器
+trainer = ModelTrainer(
+    similarity_method='cosine',
+    chunk_size=1000,
+    min_common_items=5,
+    similarity_threshold=0.1
+)
 
-# 计算相似度矩阵（使用皮尔逊算法）
-similarity_matrix = trainer.compute_item_similarity('pearson')
+# 加载数据
+trainer.load_data('data/interactions.csv')
+
+# 训练模型
+trainer.train()
 
 # 保存模型
-trainer.save_model()
-
-# 获取统计信息
-stats = trainer.get_similarity_statistics()
+trainer.save_model('models/similarity_matrix.npy')
 ```
 
-### 模型验证
-```python
-# 验证模型质量
-trainer.validate_model()
+### 复杂使用示例
 
-# 获取特定物品的相似物品
-similar_items = trainer.get_item_similarities('i123', top_k=10)
-```
-
-### 完整流程
 ```python
-# 完整训练流程
-model_results = trainer.train(user_item_matrix, item_index)
+from model_trainer import ModelTrainer
+
+# 初始化模型训练器
+trainer = ModelTrainer(
+    similarity_method='pearson',
+    chunk_size=5000,
+    min_common_items=10,
+    similarity_threshold=0.2,
+    use_adjusted_cosine=True
+)
+
+# 加载数据
+trainer.load_data('data/interactions.csv')
+
+# 预处理数据
+trainer.preprocess_data()
+
+# 训练模型
+trainer.train()
+
+# 后处理相似度矩阵
+trainer.post_process_similarity_matrix()
+
+# 保存模型
+trainer.save_model('models/similarity_matrix.npy')
+
+# 加载模型
+trainer.load_model('models/similarity_matrix.npy')
+
+# 生成推荐
+recommendations = trainer.generate_recommendations(user_id=123, top_n=10)
+print(recommendations)
 ```
 
 ## 最佳实践
 
-1. **算法选择**: 根据数据特性选择合适的相似度算法
-2. **参数调优**: 通过实验确定最优参数配置
-3. **内存管理**: 监控内存使用，避免溢出
-4. **性能监控**: 记录训练时间和资源消耗
-5. **模型验证**: 定期验证模型质量
-6. **版本管理**: 维护模型版本历史
+### 数据预处理
+
+- **数据清洗**：确保数据中没有重复项和无效值。
+- **数据分割**：将数据集分为训练集和测试集，以便评估模型性能。
+- **特征选择**：选择对模型训练最有帮助的特征。
+
+### 模型训练
+
+- **相似度方法选择**：根据数据特性和业务需求选择合适的相似度计算方法。
+- **参数调优**：通过交叉验证和网格搜索优化模型参数。
+- **性能监控**：监控训练过程中的性能指标，如准确率、召回率和F1分数。
+
+### 后处理
+
+- **相似度矩阵优化**：对生成的相似度矩阵进行后处理，去除噪声和异常值。
+- **模型持久化**：定期保存模型，以便在需要时快速加载。
+- **模型评估**：使用测试集评估模型性能，并根据评估结果进行调整。
 
 该模块为推荐系统提供了高效、稳定、可扩展的模型训练能力，是推荐质量的重要保障。
+
+## 系统设计和架构设计
+
+### 系统架构图
+
+```plaintext
++-------------------+       +-------------------+       +-------------------+
+|   数据生成模块    | ----> |   数据处理模块    | ----> |   模型训练模块    |
++-------------------+       +-------------------+       +-------------------+
+          |                         |                         |
+          v                         v                         v
++-------------------+       +-------------------+       +-------------------+
+|   用户数据生成    |       |   数据清洗和预处理|       |   相似度计算      |
++-------------------+       +-------------------+       +-------------------+
+          |                         |                         |
+          v                         v                         v
++-------------------+       +-------------------+       +-------------------+
+|   物品数据生成    |       |   特征工程        |       |   矩阵后处理      |
++-------------------+       +-------------------+       +-------------------+
+
++-------------------+       +-------------------+       +-------------------+
+|   交互数据生成    |       |   数据分割        |       |   模型持久化      |
++-------------------+       +-------------------+       +-------------------+
+```
+
+### 系统架构描述
+
+1. **数据生成模块**
+   - 负责生成用户、物品和交互数据。
+   - 包括 `user_generator.py`, `item_generator.py`, `interaction_generator.py`。
+
+2. **数据处理模块**
+   - 负责数据清洗、预处理和特征工程。
+   - 包括 `data_manager.py`, `enhanced_data_processor.py`。
+
+3. **模型训练模块**
+   - 负责计算物品相似度矩阵和模型持久化。
+   - 包括 `model_trainer.py`, `recommender.py`。
+
+4. **推荐模块**
+   - 负责生成推荐结果。
+   - 包括 `recommender.py`。
+
+5. **Web API模块**
+   - 提供HTTP接口供前端调用。
+   - 包括 `web_api.py`。
